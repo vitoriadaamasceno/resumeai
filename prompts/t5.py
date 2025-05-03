@@ -15,7 +15,7 @@ def gerar_resumo(texto):
     Returns:
         str: Resumo do texto.
     """
-    input_ids = tokenizer("summarize: " + texto, return_tensors="pt", max_length=512, truncation=True).input_ids #essa linha deve ser alterada para o modelo que você está usando
+    input_ids = tokenizer("summarize: " + texto, return_tensors="pt", max_length=512, truncation=True).input_ids #Prepares the input text for the T5 model by tokenizing and truncating it to the maximum length
     output = model.generate(input_ids, max_length=600, min_length=40, length_penalty=2.0, num_beams=4, early_stopping=True) #gera o resumo
 
     resumo = tokenizer.decode(output[0], skip_special_tokens=True)
