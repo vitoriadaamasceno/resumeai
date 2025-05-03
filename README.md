@@ -1,3 +1,9 @@
+Documentação:
+    
+    https://docs.google.com/document/d/1zlfNNjqurxK2lMhj72HDdD5oMaj6oQqxoVhZc6HEBd8/edit?tab=t.0#heading=h.iezbar998z4i
+
+
+
 Refs:
 
 - https://huggingface.co/docs/transformers/model_doc/t5
