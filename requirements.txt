@@ -2,6 +2,7 @@ annotated-types==0.7.0
 anyio==4.9.0
 certifi==2025.4.26
 charset-normalizer==3.4.1
+click==8.1.8
 distro==1.9.0
 fastapi==0.115.12
 filelock==3.18.0
@@ -61,4 +62,5 @@ triton==3.3.0
 typing-inspection==0.4.0
 typing_extensions==4.13.2
 urllib3==2.4.0
+uvicorn==0.34.2
 zstandard==0.23.0
