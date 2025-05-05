@@ -5,5 +5,5 @@ start-dev:
 up:
 	@docker compose up --build
 
-test:
-	@pytest
+lint:
+	@ruff check . --fix
