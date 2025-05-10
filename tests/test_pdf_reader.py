@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 from extract.pdf_reader import extract_text_from_pdf
 
-@patch("resumeai.extract.pdf_reader.pymupdf.open")
+@patch("extract.pdf_reader.pymupdf.open")
 def test_extract_text_from_pdf(mock_pymupdf_open):
 
     mock_doc = MagicMock()
