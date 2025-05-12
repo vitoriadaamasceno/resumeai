@@ -45,4 +45,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest --maxfail=1 --disable-warnings -q
+          python -m pytest --maxfail=1 --disable-warnings -q
