@@ -18,7 +18,7 @@ def gerar_resumo(texto):
     Gera um resumo do texto usando o modelo GPT-3.5 Turbo.
     
     Args:
-        texto (str): Texto a ser resumido em topicos.
+        texto (str): Texto a ser resumido em tópicos.
     
     Returns:
         str: Resumo do texto.
