@@ -1,6 +1,7 @@
 import pymupdf
 
-def extract_text_from_pdf(pdf):
+
+def get_pdf_text(pdf):
 
     doc = pymupdf.open(pdf)
     text = ""

@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
-from extract.pdf_reader import extract_text_from_pdf
+from extract.pdf_reader import get_pdf_text
+
 
 @patch("extract.pdf_reader.pymupdf.open")
 def test_extract_text_from_pdf(mock_pymupdf_open):
@@ -12,7 +13,7 @@ def test_extract_text_from_pdf(mock_pymupdf_open):
     mock_doc.__iter__.return_value = [mock_page1, mock_page2]
     mock_pymupdf_open.return_value = mock_doc
 
-    result = extract_text_from_pdf("dummy.pdf")
+    result = get_pdf_text("dummy.pdf")
 
     assert result == "Page 1 text. Page 2 text. "
     mock_pymupdf_open.assert_called_once_with("dummy.pdf")

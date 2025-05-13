@@ -1,11 +1,14 @@
-Documentação:
+### Documentação:
     
 - https://docs.google.com/document/d/1zlfNNjqurxK2lMhj72HDdD5oMaj6oQqxoVhZc6HEBd8/edit?tab=t.0#heading=h.iezbar998z4i
 
 
 
-Refs:
+### Refs:
 
+- https://codefresh.io/learn/ci-cd/
+- https://www.freecodecamp.org/portuguese/news/o-que-e-ci-cd-aprenda-integracao-continua-entrega-continua-criando-um-projeto/#como-configurar-um-pipeline-de-ci-cd-com-github-actions
+- https://codefresh.io/learn/ci-cd/
 - https://huggingface.co/docs/transformers/model_doc/t5
 - https://hub.asimov.academy/tutorial/desvendando-o-transformer-do-hugging-face-um-guia-para-iniciantes-em-inteligencia-artificial/
 - https://hub.asimov.academy/tutorial/utilizando-a-api-da-openai-com-langchain/

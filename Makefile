@@ -9,4 +9,4 @@ lint:
 	@ruff check . --fix
 
 test:
-	@pytest
+	@pytest -p no:warnings

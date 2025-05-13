@@ -1,0 +1,6 @@
+[tool.ruff]
+preview = true
+
+[tool.ruff.lint]
+select = ["E225", "E231", "E201", "E202", "E302"]
+
