@@ -3,7 +3,7 @@ from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from extract.utils import extract_id_video
 
 
-def format_text(transcript: dict) -> str:
+def format_text(transcript) -> str:
     return " ".join([item['text'] for item in transcript])
 
 
