@@ -1,0 +1,5 @@
+[tool.ruff]
+preview = true
+
+[tool.ruff.lint]
+select = ["E302"]

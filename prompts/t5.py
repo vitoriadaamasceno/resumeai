@@ -4,6 +4,7 @@ model_name = "t5-small"
 tokenizer = T5Tokenizer.from_pretrained(model_name) #carrega o tokenizador para o modelo T5
 model = T5ForConditionalGeneration.from_pretrained(model_name)
 
+
 def gerar_resumo(texto):
     """
     Gera um resumo do texto usando o modelo T5 da Hugging Face.
@@ -20,15 +21,4 @@ def gerar_resumo(texto):
 
     resumo = tokenizer.decode(output[0], skip_special_tokens=True)
     return resumo
-
-texto = """
-A inteligência artificial (IA) é uma área da ciência da computação que enfatiza a criação de máquinas inteligentes que trabalham e reagem como seres humanos.
-Algumas das atividades que os computadores com inteligência artificial são
-projetados para fazer incluem: reconhecimento de fala, aprendizado, planejamento e resolução de problemas. A pesquisa associada à inteligência artificial é altamente técnica e especializada.Os principais problemas da inteligência artificial incluem programação de computadores para certos traços como conhecimento,
-raciocínio, solução de problemas, percepção, aprendizado, planejamento, habilidade
-de manipular e mover objetos.
-"""
-
-print("----------------------------------------------------")
-print(gerar_resumo(texto))
 
