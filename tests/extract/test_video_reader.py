@@ -4,7 +4,6 @@ from extract.video_reader import get_video_transcript
 from youtube_transcript_api import TranscriptsDisabled
 
 
-
 @patch("extract.video_reader.YouTubeTranscriptApi.get_transcript")
 @patch("extract.video_reader.extract_id_video")
 def test_get_video_transcript_success(mock_extract_id_video, mock_get_transcript):

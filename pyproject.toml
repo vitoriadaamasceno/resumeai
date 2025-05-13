@@ -2,4 +2,5 @@
 preview = true
 
 [tool.ruff.lint]
-select = ["E302"]
+select = ["E225", "E231", "E201", "E202", "E302"]
+
