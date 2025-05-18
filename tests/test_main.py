@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from main import app
 from unittest.mock import patch
 
+
 def test_summarize_pdf():
 
     client = TestClient(app)
