@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from extract.video_reader import get_video_transcript
 from youtube_transcript_api import TranscriptsDisabled
 
