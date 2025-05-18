@@ -1,8 +1,8 @@
 import logging
-from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
-from functools import lru_cache
 import os
+from functools import lru_cache
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
