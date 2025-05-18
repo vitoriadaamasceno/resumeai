@@ -1,6 +1,8 @@
-from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
+import logging
 import os
+from functools import lru_cache
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
@@ -13,7 +15,8 @@ llm = ChatOpenAI(
 )
 
 
-def gerar_resumo(texto):
+@lru_cache(maxsize=30)
+def gerar_resumo_gpt(texto):
     """
     Gera um resumo do texto usando o modelo GPT-3.5 Turbo.
     
@@ -21,11 +24,12 @@ def gerar_resumo(texto):
         texto (str): Texto a ser resumido em tópicos.
     
     Returns:
-        str: Resumo do texto.
+        str: Resumo do texto ou mensagem de erro.
     """
- 
-    prompt = f"Resuma este texto em tópicos simplificados: {texto}"
-    
-    resposta = llm.invoke(prompt)
-    
-    return resposta.content
+    try:
+        prompt = f"Resuma este texto em tópicos simplificados: {texto}"
+        resposta = llm.invoke(prompt)
+        return resposta.content
+    except Exception as e:
+        logging.error(f"Erro ao gerar resumo com GPT: {e}")
+        return f"Erro ao gerar resumo: {str(e)}"

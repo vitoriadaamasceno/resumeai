@@ -1,10 +1,11 @@
-import pymupdf
+from PyPDF2 import PdfReader
+from io import BytesIO
 
 
 def get_pdf_text(pdf):
 
-    doc = pymupdf.open(pdf)
+    pdf_reader = PdfReader(BytesIO(pdf))
     text = ""
-    for page in doc:
-        text += page.get_text()
+    for page in pdf_reader.pages:
+        text += page.extract_text() or ""
     return text
