@@ -16,20 +16,22 @@ def read_root():
 
 
 @app.post("/summarize/pdf")
-async def summarize_pdf(file: UploadFile = File(...), ia="t5"):
+async def summarize_pdf(file: UploadFile = File(...), model="t5"):
     if file.content_type != "application/pdf":
         logging.error("O arquivo enviado não é um PDF.")
         return JSONResponse(content={"error": "O arquivo deve ser um PDF."}, status_code=400)
     try:
         contents = await file.read()
         texto_pdf = get_pdf_text(contents)
-        if ia == "gpt":
+        if model == "gpt":
             resumo = gerar_resumo_gpt(texto_pdf)
         else:
             resumo = gerar_resumo_t5(texto_pdf)
 
-        return resumo
-
+        return {"resumo": resumo}
+    except FileNotFoundError:
+        logging.error("Arquivo PDF não encontrado.")
+        return JSONResponse(content={"error": "Arquivo PDF não encontrado."}, status_code=404)
     except Exception as e:
         logging.error(f"Erro ao processar o arquivo PDF: {e}")
         return JSONResponse(content={"error": "Erro ao processar o arquivo PDF."}, status_code=500)
