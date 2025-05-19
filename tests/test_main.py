@@ -12,6 +12,7 @@ def test_invalid_file_type():
             assert response.status_code == 400
             assert response.json() == {"error": "O arquivo deve ser um PDF."}
 
+
 def test_valid_pdf_file():
     client = TestClient(app)
     with patch("main.gerar_resumo_t5") as mock_generate_summary:
@@ -21,12 +22,14 @@ def test_valid_pdf_file():
             assert response.status_code == 200
             assert response.json() == {"resumo": "Resumo gerado pela IA."}
 
+
 def test_missing_pdf_file():
     client = TestClient(app)
     with patch("main.gerar_resumo_t5") as mock_generate_summary:
         mock_generate_summary.return_value = "Resumo gerado pela IA."
         response = client.post("/summarize/pdf", files={"file": (None, None, "application/pdf")})
         assert response.status_code == 400
+
 
 def test_corrupted_pdf_file():
     client = TestClient(app)

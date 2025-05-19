@@ -38,11 +38,18 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Set environment variables
+        env:
+          API_KEY_GPT: ${{ secrets.API_KEY_GPT }}
+        run: echo "Environment variable API_KEY_GPT set."
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run tests
+        env:
+          API_KEY_GPT: ${{ secrets.API_KEY_GPT}}
         run: |
           python -m pytest --maxfail=1 --disable-warnings -q
