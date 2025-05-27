@@ -8,7 +8,7 @@ def test_extract_id_video():
     assert extract_id_video.extract_id_video(url) == expected_id
 
 
-def test_extract_id_video_invalid_regex():
-    url = "https://www.example.com/watch?v=abcdeijk"
-    with pytest.raises(ValueError):
-        extract_id_video.extract_id_video(url)
+def test_extract_id_video_invalid_url():
+    url = "https://www.example.com/watch?v=abcdefghijk"
+    id_video = extract_id_video.extract_id_video(url)
+    assert id_video is None

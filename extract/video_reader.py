@@ -1,20 +1,22 @@
+from functools import lru_cache
+import logging
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
-
-from extract.utils import extract_id_video
 
 
 def format_text(transcript) -> str:
     return " ".join([item['text'] for item in transcript])
 
 
-def get_video_transcript(url: str) -> str:
-
-    video_id = extract_id_video(url)
+@lru_cache(maxsize=30)
+def get_video_transcript(id_url: str):
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['pt'])
+        transcript = YouTubeTranscriptApi.get_transcript(id_url, languages=['pt'])
         transcript = format_text(transcript)
         return transcript
     except TranscriptsDisabled:
         raise ValueError("Transcrição desativada para este vídeo.")
+    except Exception as e:
+        logging.error(f"Erro ao obter a transcrição do vídeo: {e}")
+        raise ValueError(f"Erro ao obter a transcrição do vídeo: {e}")
 
     
