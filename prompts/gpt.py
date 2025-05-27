@@ -29,6 +29,7 @@ def gerar_resumo_gpt(texto):
     try:
         prompt = f"Resuma este texto em tópicos simplificados: {texto}"
         resposta = llm.invoke(prompt)
+        logging.info("Resposta do GPT")
         return resposta.content
     except Exception as e:
         logging.error(f"Erro ao gerar resumo com GPT: {e}")
