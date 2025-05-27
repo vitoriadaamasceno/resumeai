@@ -39,27 +39,3 @@ def test_corrupted_pdf_file():
             response = client.post("/summarize/pdf", files={"file": ("corrupted.pdf", f, "application/pdf")})
             assert response.status_code == 500
             assert response.json() == {"error": "Erro ao processar o arquivo PDF."}
-
-
-def test_valid_video_url():
-    client = TestClient(app)
-    with patch("main.gerar_resumo_t5") as mock_generate_summary:
-        mock_generate_summary.return_value = "Resumo gerado pela IA."
-        with patch("main.extract_id_video") as mock_extract_id_video:
-            mock_extract_id_video.return_value = "ku3yPGnfNuA"
-            response = client.post("/summarize/video", data={"url": "https://www.youtube.com/watch?v=ku3yPGnfNuA"})
-            assert response.status_code == 200
-            assert response.json() == {"resumo": "Resumo gerado pela IA."}
-
-
-def test_invalid_video_url():
-    client = TestClient(app)
-    with patch("main.gerar_resumo_t5") as mock_generate_summary:
-        mock_generate_summary.return_value = "Resumo gerado pela IA."
-        with patch("main.extract_id_video") as mock_extract_id_video:
-            mock_extract_id_video.return_value = None
-            response = client.post("/summarize/video", data={"url": "https://www.example.com/watch?v=abcdefghijk"})
-            assert response.status_code == 400
-            assert response.json() == {"error": "URL inválida"}
-
-

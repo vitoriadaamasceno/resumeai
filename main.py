@@ -56,8 +56,8 @@ def summize_video(url : str = Body(...), model="t5"):
         return {"resumo": resumo}
     except ValueError as e:
         logging.error(f"Erro ao obter a transcrição do vídeo: {e}")
-        return JSONResponse(content={"error": "Erro ao obter transcrição do vídeo: " + str(e)}, status_code=400)
+        return JSONResponse(content={"error": "Erro ao obter transcrição do vídeo"}, status_code=400)
     except Exception as e:
         logging.error(f"Erro ao processar o vídeo: {e}")
-        return JSONResponse(content={"error": "Erro ao processar o vídeo.Erro:" + str(e)}, status_code=500)
+        return JSONResponse(content={"error": "Erro ao processar o vídeo."}, status_code=500)
     
