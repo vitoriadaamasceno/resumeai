@@ -17,7 +17,7 @@ async def get_html(url: str, timeout: int = 5) -> str:
 
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.get(url)
-        time.sleep(timeout)
+        await asyncio.sleep(timeout)
 
         if driver.execute_script("return document.readyState") != "complete":
             driver.quit()
