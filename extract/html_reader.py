@@ -8,24 +8,29 @@ import time, logging
 
 async def get_html(url: str, timeout: int = 5) -> str:
     try:
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("start-maximized")
-        options.add_argument("user-agent=Mozilla/5.0")
+        def fetch_html():
+            options = webdriver.ChromeOptions()
+            options.add_argument("--headless")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-blink-features=AutomationControlled")
+            options.add_argument("start-maximized")
+            options.add_argument("user-agent=Mozilla/5.0")
 
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-        driver.get(url)
-        await asyncio.sleep(timeout)
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+            driver.get(url)
+            time.sleep(timeout)
 
-        if driver.execute_script("return document.readyState") != "complete":
+            if driver.execute_script("return document.readyState") != "complete":
+                driver.quit()
+                return None
+
+            html = driver.page_source
             driver.quit()
+            return html
+
+        html = await asyncio.to_thread(fetch_html)
+        if not html:
             return None
-
-        html = driver.page_source
-        driver.quit()
-
         soup = BeautifulSoup(html, "html.parser")
         texto = limpar_html_para_resumo(soup.prettify())
         return texto if texto else None
