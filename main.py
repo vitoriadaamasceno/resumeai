@@ -1,7 +1,7 @@
 import logging
 from enum import Enum
 from pydantic import BaseModel
-from fastapi import FastAPI, File, Query, UploadFile, Body
+from fastapi import FastAPI, File, UploadFile, Body
 from fastapi.responses import JSONResponse
 from extract.pdf_reader import get_pdf_text
 from extract.html_reader import get_html
