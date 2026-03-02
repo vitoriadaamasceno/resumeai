@@ -1,4 +1,5 @@
 import re
+from bs4 import BeautifulSoup as bs
 
 
 def extract_id_video(url: str) -> str | None:
@@ -10,3 +11,13 @@ def extract_id_video(url: str) -> str | None:
     return video_id
 
 
+def limpar_html_para_resumo(html: str) -> str:
+    soup = bs(html, "html.parser")
+
+    for tag in soup(["script", "style", "header", "footer", "nav", "form", "noscript"]):
+        tag.decompose()
+
+    texto = soup.get_text(separator="\n", strip=True)
+
+    linhas = [linha.strip() for linha in texto.splitlines() if linha.strip()]
+    return "\n".join(linhas[:1000])

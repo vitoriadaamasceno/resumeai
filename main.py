@@ -1,21 +1,28 @@
+import logging
 from enum import Enum
 from pydantic import BaseModel
 from fastapi import FastAPI, File, UploadFile, Body
 from fastapi.responses import JSONResponse
 from extract.pdf_reader import get_pdf_text
+from extract.html_reader import get_html
 from extract.video_reader import get_video_transcript
 from extract.utils import extract_id_video
 from prompts.t5 import gerar_resumo_t5
 from prompts.gpt import gerar_resumo_gpt
 
-import logging
 
 class Model(Enum):
     T5 = "t5"
     GPT = "gpt"
 
+
 class VideoRequest(BaseModel):
     url: str
+
+
+class HtmlInput(BaseModel):
+    url: str
+
 
 class PDFRequest(BaseModel):
     file: UploadFile = File(...)
@@ -73,3 +80,25 @@ def summize_video(request: VideoRequest, model: Model = Model.T5.value):
         logging.error(f"Erro ao processar o vídeo: {e}")
         return JSONResponse(content={"error": "Erro ao processar o vídeo."}, status_code=500)
     
+
+@app.post("/summarize/html")
+async def summarize_html(url_body: HtmlInput, model: Model = Model.T5.value):
+    url = url_body.url
+    if not url:
+        logging.error("URL não fornecida.")
+        return JSONResponse(content={"error": "URL não fornecida."}, status_code=400)
+    try:
+        html_content = await get_html(url)
+        if not html_content:
+            logging.error("Não foi possível obter o conteúdo HTML.")
+            return JSONResponse(content={"error": "Não foi possível obter o conteúdo HTML."}, status_code=404)
+
+        if model.value == "gpt":
+            resumo = gerar_resumo_gpt(html_content)
+        else:
+            resumo = gerar_resumo_t5(html_content)
+
+        return {"resumo": resumo}
+    except Exception as e:
+        logging.error(f"Erro ao processar o HTML: {e}")
+        return JSONResponse(content={"error": "Erro ao processar o HTML."}, status_code=500)

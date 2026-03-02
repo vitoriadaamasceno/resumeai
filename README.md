@@ -44,3 +44,4 @@ make lint
 https://www.linkedin.com/advice/0/how-can-asynchronous-programming-speed-up-ttuyc?lang=pt&originalSubdomain=pt
 https://medium.com/@edytarcio/async-await-introdu%C3%A7%C3%A3o-%C3%A0-programa%C3%A7%C3%A3o-ass%C3%ADncrona-em-python-fa30d077018e
 http://reddit.com/r/Python/comments/z95j2j/async_python_is_not_faster_excellent_analysis/?tl=pt-br
+- https://docs.scrapy.org/en/latest/
