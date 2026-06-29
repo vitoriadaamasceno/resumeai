@@ -1,36 +1,68 @@
 import logging
 import os
 from functools import lru_cache
+
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage
 
 load_dotenv()
 
-API_KEY_GPT = os.getenv("API_KEY_GPT")
 
-llm = ChatOpenAI(
-    model="gpt-3.5-turbo",
-    openai_api_key=API_KEY_GPT,
-    temperature=0,
-)
+def get_llm():
+    api_key = os.getenv("OPENAI_API_KEY")
+    logging.info(f"API Key: {api_key}")
+    if not api_key:
+        logging.warning("Chave da OpenAI não configurada.")
+        return None
+
+    return ChatOpenAI(
+        model="gpt-3.5-turbo",
+        openai_api_key=api_key,
+        temperature=0,
+    )
 
 
-@lru_cache(maxsize=30)
 def gerar_resumo_gpt(texto):
-    """
-    Gera um resumo do texto usando o modelo GPT-3.5 Turbo.
-    
-    Args:
-        texto (str): Texto a ser resumido em tópicos.
-    
-    Returns:
-        str: Resumo do texto ou mensagem de erro.
-    """
     try:
-        prompt = f"Resuma este texto em tópicos simplificados: {texto}"
-        resposta = llm.invoke(prompt)
-        logging.info("Resposta do GPT")
+        llm = get_llm()
+
+        if llm is None:
+            return "Resumo indisponível no momento. A chave da OpenAI não foi configurada."
+
+        mensagens = [
+            SystemMessage(
+                content="""
+                Você é um assistente especializado em resumir textos de forma clara, objetiva e fiel ao conteúdo original.
+                Seu objetivo é transformar textos longos em tópicos simples, bem organizados e fáceis de entender.
+                Não invente informações. Preserve dados importantes como nomes, datas, números e termos técnicos.
+                """
+            ),
+            HumanMessage(
+                content=f"""
+            Resuma o texto abaixo em tópicos simplificados.
+
+            Regras:
+            - Use linguagem simples e direta.
+            - Destaque apenas as informações mais importantes.
+            - Organize o conteúdo em tópicos com marcadores.
+            - Agrupe ideias relacionadas.
+            - Evite repetições.
+            - Não adicione opiniões ou informações externas.
+            - Se houver ações, decisões ou conclusões, destaque-as claramente.
+
+            Texto:
+            \"\"\"
+            {texto}
+            \"\"\"
+            """
+            ),
+        ]
+
+        resposta = llm.invoke(mensagens)
+        logging.info("Resposta do GPT recebida com sucesso.")
         return resposta.content
+
     except Exception as e:
         logging.error(f"Erro ao gerar resumo com GPT: {e}")
         return f"Erro ao gerar resumo: {str(e)}"
