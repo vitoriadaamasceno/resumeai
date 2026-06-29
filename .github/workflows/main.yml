@@ -40,8 +40,8 @@ jobs:
 
       - name: Set environment variables
         env:
-          API_KEY_GPT: ${{ secrets.API_KEY_GPT }}
-        run: echo "Environment variable API_KEY_GPT set."
+          OPENAI_API_KEY: ${{ secrets.API_KEY_GPT }}
+        run: echo "Environment variable OPENAI_API_KEY set."
 
       - name: Install dependencies
         run: |
@@ -50,6 +50,6 @@ jobs:
 
       - name: Run tests
         env:
-          API_KEY_GPT: ${{ secrets.API_KEY_GPT}}
+          OPENAI_API_KEY: ${{ secrets.API_KEY_GPT}}
         run: |
           python -m pytest --maxfail=1 --disable-warnings -q
