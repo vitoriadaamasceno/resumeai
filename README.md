@@ -4,6 +4,8 @@ ResumeAI é uma extensão para Google Chrome que permite resumir conteúdos de p
 
 A extensão abre em um painel lateral do navegador, permitindo que o usuário continue navegando sem perder a tela do resumidor.
 
+![alt text](image.png)
+
 ## Funcionalidades
 
 * Resumir a página atual aberta no navegador.
