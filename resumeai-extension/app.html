@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>ResumeAI</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <div>
+        <h1>ResumeAI</h1>
+        <p>Resuma páginas, PDFs e vídeos.</p>
+      </div>
+
+      <button id="closePanelBtn" type="button" class="close-btn">
+        ×
+      </button>
+    </header>
+
+    <section class="card">
+      <button id="summarizePageBtn" type="button" class="primary-btn">
+        Resumir esta página
+      </button>
+
+      <div class="divider">
+        <span>ou</span>
+      </div>
+
+      <label for="linkInput">Link do site</label>
+      <div class="input-group">
+        <input
+          id="linkInput"
+          type="url"
+          placeholder="https://exemplo.com/noticia"
+        />
+        <button id="summarizeLinkBtn" type="button">
+          Resumir
+        </button>
+      </div>
+
+      <label for="videoInput">Link do YouTube</label>
+      <div class="input-group">
+        <input
+          id="videoInput"
+          type="url"
+          placeholder="https://youtube.com/watch?v=..."
+        />
+        <button id="summarizeVideoBtn" type="button">
+          Resumir
+        </button>
+      </div>
+
+      <label for="pdfInput">Enviar PDF</label>
+      <input id="pdfInput" type="file" accept="application/pdf" />
+
+      <p id="fileName" class="file-name">
+        Nenhum arquivo selecionado
+      </p>
+
+      <button id="summarizePdfBtn" type="button" class="secondary-btn">
+        Resumir PDF
+      </button>
+    </section>
+
+    <section id="loading" class="loading hidden">
+      Gerando resumo...
+    </section>
+
+    <section id="errorBox" class="error hidden"></section>
+
+    <section id="resultBox" class="result hidden">
+      <h2>Resumo</h2>
+      <div id="summaryContent"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
