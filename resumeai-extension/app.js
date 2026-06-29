@@ -7,6 +7,7 @@ const summarizeLinkBtn = document.getElementById("summarizeLinkBtn");
 const summarizeVideoBtn = document.getElementById("summarizeVideoBtn");
 const summarizePdfBtn = document.getElementById("summarizePdfBtn");
 
+
 const linkInput = document.getElementById("linkInput");
 const videoInput = document.getElementById("videoInput");
 const pdfInput = document.getElementById("pdfInput");
@@ -16,6 +17,7 @@ const loading = document.getElementById("loading");
 const errorBox = document.getElementById("errorBox");
 const resultBox = document.getElementById("resultBox");
 const summaryContent = document.getElementById("summaryContent");
+const copySummaryBtn = document.getElementById("copySummaryBtn");
 
 function showLoading() {
   loading.classList.remove("hidden");
@@ -81,6 +83,7 @@ async function getCurrentPageText() {
 
   return results[0].result;
 }
+
 
 closePanelBtn.addEventListener("click", () => {
   window.close();
@@ -213,3 +216,55 @@ summarizePdfBtn.addEventListener("click", async () => {
     hideLoading();
   }
 });
+
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  textarea.style.top = "-9999px";
+
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+
+  const copied = document.execCommand("copy");
+
+  document.body.removeChild(textarea);
+
+  if (!copied) {
+    throw new Error("Falha ao copiar usando fallback.");
+  }
+}
+
+async function copySummary() {
+  const summary = summaryContent.textContent.trim();
+
+  if (!summary) {
+    showError("Não há resumo para copiar.");
+    return;
+  }
+
+  try {
+    await copyTextToClipboard(summary);
+
+    copySummaryBtn.textContent = "✅";
+    copySummaryBtn.classList.add("copied");
+
+    setTimeout(() => {
+      copySummaryBtn.textContent = "📋";
+      copySummaryBtn.classList.remove("copied");
+    }, 2000);
+  } catch (error) {
+    console.error("Erro ao copiar resumo:", error);
+    showError("Não foi possível copiar o resumo.");
+  }
+}
+
+copySummaryBtn.addEventListener("click", copySummary);

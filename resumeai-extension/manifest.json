@@ -7,7 +7,9 @@
     "activeTab",
     "scripting",
     "tabs",
-    "sidePanel"
+    "sidePanel",
+    "clipboardWrite"
+
   ],
   "host_permissions": [
     "http://localhost:8000/*",
