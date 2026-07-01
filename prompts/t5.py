@@ -1,6 +1,4 @@
 import logging
-from functools import lru_cache
-
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 
@@ -10,27 +8,19 @@ tokenizer = T5Tokenizer.from_pretrained(model_name)
 model = T5ForConditionalGeneration.from_pretrained(model_name)
 
 
-def limpar_texto(texto: str) -> str:
+def clean_text(texto: str) -> str:
     return " ".join(texto.split())
 
 
-def montar_prompt_t5(texto: str) -> str:
-    # Para modelo já treinado em resumo, evite prompt longo
-    return limpar_texto(texto)
-
-
-@lru_cache(maxsize=2)
-def gerar_resumo_t5(texto: str) -> str:
+def generate_summary_t5(texto: str) -> str:
     """
     Gera um resumo do texto usando modelo T5 treinado para sumarização em PT-BR.
     """
     try:
-        texto = limpar_texto(texto)
-
         if not texto:
-            return "Texto vazio. Não2) foi possível gerar resumo."
+            return "Texto vazio. Não foi possível gerar resumo."
 
-        prompt = montar_prompt_t5(texto)
+        prompt = clean_text(texto)
 
         inputs = tokenizer(
             prompt,

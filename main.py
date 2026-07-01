@@ -1,36 +1,15 @@
 import logging
-from enum import Enum
-from pydantic import BaseModel
-from fastapi import FastAPI, File, UploadFile, Body
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from extract.pdf_reader import get_pdf_text
 from extract.html_reader import get_html
-from extract.video_reader import get_video_transcript
-from extract.utils import extract_id_video
-from prompts.t5 import gerar_resumo_t5
-from prompts.gpt import gerar_resumo_gpt
+from extract.video_reader import get_video_transcript, extract_id_video
+from services.summarize import summarize
+from schema import LlmModel, VideoRequest, HtmlInput, PDFRequest
 
-
-
-class Model(Enum):
-    T5 = "t5"
-    GPT = "gpt"
-
-
-class VideoRequest(BaseModel):
-    url: str
-
-
-class HtmlInput(BaseModel):
-    url: str
-
-
-class PDFRequest(BaseModel):
-    file: UploadFile = File(...)
 
 app = FastAPI(title='Resume Ai', description='API para resumir textos com IA', version='1.0.0')
-
-from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,24 +23,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def read_root():
     return {"message": "Bem-vindo à API de Resumo com IA!"}
 
 
 @app.post("/summarize/pdf")
-async def summarize_pdf(file: UploadFile = File(...), model: Model = Model.T5.value):
+async def summarize_pdf(file: UploadFile = File(...), model: LlmModel = LlmModel.T5.value):
     if file.content_type != "application/pdf":
         logging.error("O arquivo enviado não é um PDF.")
         return JSONResponse(content={"error": "O arquivo deve ser um PDF."}, status_code=400)
     try:
         contents = await file.read()
         texto_pdf = get_pdf_text(contents)
-        if model.value == "gpt":
-            resumo = gerar_resumo_gpt(texto_pdf)
-        else:
-            resumo = gerar_resumo_t5(texto_pdf)
-
+        resumo = summarize(texto_pdf, model)
         return {"resumo": resumo}
     except FileNotFoundError:
         logging.error("Arquivo PDF não encontrado.")
@@ -72,20 +48,16 @@ async def summarize_pdf(file: UploadFile = File(...), model: Model = Model.T5.va
     
 
 @app.post("/summarize/video")
-def summize_video(request: VideoRequest, model: Model = Model.T5.value):
+def summarize_video(request: VideoRequest, model: LlmModel = LlmModel.T5.value):
     url = request.url
     id_video = extract_id_video(url)
     if not id_video:
-        logging.error("URL invalida")
+        logging.error("URL inválida, não foi possível extrair o ID do vídeo.")
         return JSONResponse(content={"error": "URL inválida"}, status_code=400)
     try:
         logging.info(f"ID do vídeo extraído: {id_video}")
         video_transcript = get_video_transcript(id_video)
-        
-        if model.value == "gpt":
-            resumo = gerar_resumo_gpt(video_transcript)
-        else:
-            resumo = gerar_resumo_t5(video_transcript)
+        resumo = summarize(video_transcript, model)
         return {"resumo": resumo}
     except ValueError as e:
         logging.error(f"Erro ao obter a transcrição do vídeo: {e}")
@@ -96,7 +68,7 @@ def summize_video(request: VideoRequest, model: Model = Model.T5.value):
     
 
 @app.post("/summarize/html")
-async def summarize_html(url_body: HtmlInput, model: Model = Model.T5.value):
+async def summarize_html(url_body: HtmlInput, model: LlmModel = LlmModel.T5.value):
     url = url_body.url
     if not url:
         logging.error("URL não fornecida.")
@@ -106,11 +78,8 @@ async def summarize_html(url_body: HtmlInput, model: Model = Model.T5.value):
         if not html_content:
             logging.error("Não foi possível obter o conteúdo HTML.")
             return JSONResponse(content={"error": "Não foi possível obter o conteúdo HTML."}, status_code=404)
-
-        if model.value == "gpt":
-            resumo = gerar_resumo_gpt(html_content)
-        else:
-            resumo = gerar_resumo_t5(html_content)
+     
+        resumo = summarize(html_content, model)
 
         return {"resumo": resumo}
     except Exception as e:

@@ -1,17 +1,10 @@
 import logging
-import os
-from functools import lru_cache
-
-from dotenv import load_dotenv
+from config import OPENAI_API_KEY as api_key
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 
-load_dotenv()
-
 
 def get_llm():
-    api_key = os.getenv("OPENAI_API_KEY")
-    logging.info(f"API Key: {api_key}")
     if not api_key:
         logging.warning("Chave da OpenAI não configurada.")
         return None
@@ -23,7 +16,7 @@ def get_llm():
     )
 
 
-def gerar_resumo_gpt(texto):
+def generate_summary_gpt(texto):
     try:
         llm = get_llm()
 

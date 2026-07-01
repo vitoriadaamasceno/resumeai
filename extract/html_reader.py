@@ -9,12 +9,24 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
-
-from extract.utils import limpar_html_para_resumo
+from bs4 import BeautifulSoup as bs
 
 
 CHROME_BIN = os.getenv("CHROME_BIN", "/usr/bin/chromium")
 CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
+
+
+
+def clean_html(html: str) -> str:
+    soup = bs(html, "html.parser")
+
+    for tag in soup(["script", "style", "header", "footer", "nav", "form", "noscript"]):
+        tag.decompose()
+
+    texto = soup.get_text(separator="\n", strip=True)
+
+    linhas = [linha.strip() for linha in texto.splitlines() if linha.strip()]
+    return "\n".join(linhas[:1000])
 
 
 async def get_html(url: str, timeout: int = 10) -> Optional[str]:
@@ -73,6 +85,6 @@ async def get_html(url: str, timeout: int = 10) -> Optional[str]:
         return None
 
     soup = BeautifulSoup(html, "html.parser")
-    texto = limpar_html_para_resumo(soup.prettify())
+    texto = clean_html(soup.prettify())
 
     return texto if texto else None
