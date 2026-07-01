@@ -4,9 +4,6 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 model_name = "recogna-nlp/ptt5-base-summ-xlsum"
 
-tokenizer = T5Tokenizer.from_pretrained(model_name)
-model = T5ForConditionalGeneration.from_pretrained(model_name)
-
 
 def clean_text(texto: str) -> str:
     return " ".join(texto.split())
@@ -21,6 +18,8 @@ def generate_summary_t5(texto: str) -> str:
             return "Texto vazio. Não foi possível gerar resumo."
 
         prompt = clean_text(texto)
+        tokenizer = T5Tokenizer.from_pretrained(model_name)
+        model = T5ForConditionalGeneration.from_pretrained(model_name)
 
         inputs = tokenizer(
             prompt,
