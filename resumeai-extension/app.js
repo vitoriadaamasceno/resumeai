@@ -1,4 +1,5 @@
 const API_BASE_URL = "http://localhost:8000";
+const MODEL = "gpt";
 
 const closePanelBtn = document.getElementById("closePanelBtn");
 
@@ -105,7 +106,7 @@ summarizePageBtn.addEventListener("click", async () => {
 
     const pageData = await getCurrentPageText();
 
-    const data = await requestJson(`${API_BASE_URL}/summarize/html?model=gpt`, {
+    const data = await requestJson(`${API_BASE_URL}/summarize/html?model=${MODEL}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -135,7 +136,7 @@ summarizeLinkBtn.addEventListener("click", async () => {
 
     showLoading();
 
-    const data = await requestJson(`${API_BASE_URL}/summarize/html?model=gpt`, {
+    const data = await requestJson(`${API_BASE_URL}/summarize/html?model=${MODEL}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -165,7 +166,7 @@ summarizeVideoBtn.addEventListener("click", async () => {
 
     showLoading();
 
-    const data = await requestJson(`${API_BASE_URL}/summarize/video?model=gpt`, {
+    const data = await requestJson(`${API_BASE_URL}/summarize/video?model=${MODEL}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -203,7 +204,7 @@ summarizePdfBtn.addEventListener("click", async () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const data = await requestJson(`${API_BASE_URL}/summarize/pdf?model=gpt`, {
+    const data = await requestJson(`${API_BASE_URL}/summarize/pdf?model=${MODEL}`, {
       method: "POST",
       body: formData,
     });
