@@ -17,6 +17,42 @@ A extensão abre em um painel lateral do navegador, permitindo que o usuário co
 * Exibir o resumo em formato de tópicos.
 * Integração com API backend em Python.
 
+## Tecnologias e lógica de processamento
+
+O backend foi construído com **Python** e **FastAPI**. Cada tipo de conteúdo
+passa por uma etapa de extração e, em seguida, o texto obtido é enviado para o
+modelo de resumo selecionado.
+
+### Páginas HTML: HTTPX com fallback para Playwright
+
+A extração de uma página segue esta ordem:
+
+1. O backend tenta acessar a URL com **HTTPX**, um cliente HTTP assíncrono e leve.
+2. A resposta é analisada para verificar o status HTTP, o tipo de conteúdo e se o HTML está vazio, inválido ou apresenta sinais de bloqueio.
+3. Se o conteúdo for válido, o texto é limpo e retornado sem iniciar um navegador.
+4. Se o acesso direto não resolver, o backend usa **Playwright** como fallback.
+   Ele abre o Chromium em modo headless, permitindo carregar páginas cujo conteúdo depende de JavaScript.
+5. Se as duas estratégias falharem, a API informa que não foi possível obter o conteúdo da página.
+
+Essa ordem evita iniciar um navegador quando uma requisição HTTP simples já é suficiente, reduzindo tempo de resposta e consumo de memória.
+
+### Arquivos PDF
+
+Os PDFs usam o **PyPDF2** como conversor simples. O backend percorre as páginas do arquivo, extrai o texto disponível e concatena o resultado antes da sumarização. Essa abordagem funciona para PDFs que contêm texto selecionável; imagens digitalizadas não passam por OCR.
+
+### Vídeos do YouTube
+
+O backend usa a biblioteca **youtube-transcript-api** para obter a transcrição em português disponibilizada pelo YouTube. Os trechos da transcrição são unidos em um texto único e enviados ao modelo de resumo. O processamento depende de o vídeo possuir uma transcrição acessível.
+
+### Modelos de inteligência artificial
+
+O projeto oferece duas estratégias de sumarização, selecionadas pelo parâmetro `model`:
+
+* **GPT (`gpt-3.5-turbo`)**: usado por meio da API da OpenAI. É um modelo leve para tarefas de resumo e suficiente para o objetivo do projeto, pois consegue identificar os pontos principais, organizar o resultado em tópicos e seguir instruções com bom custo e tempo de resposta. Essa opção exige a variável `OPENAI_API_KEY`.
+
+* **T5 (`recogna-nlp/ptt5-base-summ-xlsum`)**: modelo especializado em sumarização em português, executado localmente com a biblioteca **Transformers**. Não exige uma chave da OpenAI, mas demanda mais memória e processamento no ambiente onde o backend está rodando.
+O T5 é o modelo padrão dos endpoints. A extensão pode selecionar a estratégia GPT enviando `model=gpt`.
+
 ## Estrutura da Extensão
 
 ```text
@@ -133,7 +169,7 @@ POST /summarize/video?model=t5
 
 ```json
 {
-  "url": "https://exemplo.com",
+  "url": "https://exemplo.com"
 }
 ```
 
@@ -160,5 +196,4 @@ file
 * Caso a API esteja em outra porta ou domínio, altere a variável `API_BASE_URL` no arquivo `app.js`.
 * O resumo depende do modelo escolhido no backend, como `t5` ou `gpt`.
 * Para usar GPT, é necessário configurar corretamente a chave da OpenAI no backend.
-
 
