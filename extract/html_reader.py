@@ -1,90 +1,135 @@
-import asyncio
+"""Extração de texto de páginas HTML com fallback para um navegador."""
+
 import logging
-import os
 from typing import Optional
 
+import httpx
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, WebDriverException
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.ui import WebDriverWait
-from bs4 import BeautifulSoup as bs
+from playwright.async_api import Error as PlaywrightError
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import async_playwright
 
 
-CHROME_BIN = os.getenv("CHROME_BIN", "/usr/bin/chromium")
-CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
+logger = logging.getLogger("uvicorn.error")
 
+USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+
+BLOCKED_STATUS_CODES = {401, 403, 407, 429, 503}
+BLOCKED_MARKERS = (
+    "access denied",
+    "attention required! | cloudflare",
+    "cf-chl-",
+    "captcha",
+    "checking your browser",
+    "enable javascript and cookies to continue",
+    "just a moment...",
+    "request blocked",
+    "verify you are human",
+)
 
 
 def clean_html(html: str) -> str:
-    soup = bs(html, "html.parser")
+    """Remove elementos não textuais e limita o texto devolvido."""
+    soup = BeautifulSoup(html, "html.parser")
 
     for tag in soup(["script", "style", "header", "footer", "nav", "form", "noscript"]):
         tag.decompose()
 
-    texto = soup.get_text(separator="\n", strip=True)
+    text = soup.get_text(separator="\n", strip=True)
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    return "\n".join(lines[:1000])
 
-    linhas = [linha.strip() for linha in texto.splitlines() if linha.strip()]
-    return "\n".join(linhas[:1000])
+
+def _is_blocked(html: str, status_code: int = 200) -> bool:
+    """Identifica respostas HTTP e páginas de desafio/bloqueio comuns."""
+    if status_code in BLOCKED_STATUS_CODES:
+        return True
+
+    sample = html[:100_000].lower()
+    return any(marker in sample for marker in BLOCKED_MARKERS)
+
+
+def _extract_valid_content(html: str, status_code: int = 200) -> Optional[str]:
+    if not html or status_code >= 400 or _is_blocked(html, status_code):
+        return None
+
+    text = clean_html(html)
+    return text if text.strip() else None
+
+
+async def _fetch_with_httpx(url: str, timeout: int) -> Optional[str]:
+    logger.info("[HTML reader] Tentando acessar via HTTPX: %s", url)
+    try:
+        async with httpx.AsyncClient(
+            follow_redirects=True,
+            headers={"User-Agent": USER_AGENT},
+            timeout=timeout,
+        ) as client:
+            response = await client.get(url)
+
+        content_type = response.headers.get("content-type", "").lower()
+        if content_type and "html" not in content_type and "text/" not in content_type:
+            logger.info("[HTML reader] HTTPX retornou conteúdo incompatível: %s", content_type)
+            return None
+
+        content = _extract_valid_content(response.text, response.status_code)
+        if not content:
+            logger.info(
+                "[HTML reader] HTTPX retornou resposta vazia, inválida ou bloqueada "
+                "para %s (status %s)",
+                url,
+                response.status_code,
+            )
+        return content
+    except httpx.HTTPError as error:
+        logger.warning("[HTML reader] HTTPX não conseguiu acessar %s: %s", url, error)
+        return None
+
+
+async def _fetch_with_playwright(url: str, timeout: int) -> Optional[str]:
+    logger.info("[HTML reader] Tentando acessar via Playwright: %s", url)
+    try:
+        async with async_playwright() as playwright:
+            browser = await playwright.chromium.launch(headless=True)
+            try:
+                page = await browser.new_page(user_agent=USER_AGENT)
+                await page.goto(
+                    url,
+                    wait_until="domcontentloaded",
+                    timeout=timeout * 1000,
+                )
+                try:
+                    await page.wait_for_load_state("networkidle", timeout=timeout * 1000)
+                except PlaywrightTimeoutError:
+                    logger.info(
+                        "[HTML reader] Playwright detectou conexões ativas; "
+                        "analisando o HTML: %s",
+                        url,
+                    )
+
+                content = _extract_valid_content(await page.content())
+                return content
+            finally:
+                await browser.close()
+    except (PlaywrightTimeoutError, PlaywrightError) as error:
+        logger.warning("[HTML reader] Playwright não conseguiu acessar %s: %s", url, error)
+        return None
 
 
 async def get_html(url: str, timeout: int = 10) -> Optional[str]:
-    def fetch_html() -> Optional[str]:
-        driver = None
+    """Obtém texto via HTTPX e usa Playwright quando a resposta não é válida."""
+    content = await _fetch_with_httpx(url, timeout)
+    if content:
+        logger.info("[HTML reader] Resolvido via HTTPX: %s", url)
+        return content
 
-        try:
-            options = Options()
-            options.binary_location = CHROME_BIN
-
-            options.add_argument("--headless=new")
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-            options.add_argument("--disable-gpu")
-            options.add_argument("--disable-blink-features=AutomationControlled")
-            options.add_argument("--window-size=1920,1080")
-            options.add_argument("--remote-debugging-port=9222")
-            options.add_argument(
-                "--user-agent=Mozilla/5.0 "
-                "(X11; Linux x86_64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            )
-
-            service = Service(CHROMEDRIVER_PATH)
-
-            driver = webdriver.Chrome(service=service, options=options)
-            driver.set_page_load_timeout(timeout)
-
-            driver.get(url)
-            logging.info("Página carregada: %s", url)
-            WebDriverWait(driver, timeout).until(
-                lambda d: d.execute_script("return document.readyState") == "complete"
-            )
-            logging.info("Página totalmente carregada: %s", url)
-            return driver.page_source
-
-        except TimeoutException:
-            logging.warning("Timeout ao carregar a página: %s", url)
-            return None
-
-        except WebDriverException as e:
-            logging.exception("Erro do Selenium/ChromeDriver ao ler HTML: %s", e)
-            return None
-
-        except Exception as e:
-            logging.exception("Erro inesperado ao ler HTML: %s", e)
-            return None
-
-        finally:
-            if driver:
-                driver.quit()
-
-    html = await asyncio.to_thread(fetch_html)
-
-    if not html:
-        return None
-
-    soup = BeautifulSoup(html, "html.parser")
-    texto = clean_html(soup.prettify())
-
-    return texto if texto else None
+    logger.info("[HTML reader] HTTPX não resolveu; acionando fallback Playwright: %s", url)
+    content = await _fetch_with_playwright(url, timeout)
+    if content:
+        logger.info("[HTML reader] Resolvido via Playwright: %s", url)
+    else:
+        logger.error("[HTML reader] HTTPX e Playwright falharam para: %s", url)
+    return content
