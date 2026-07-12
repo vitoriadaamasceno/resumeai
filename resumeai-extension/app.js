@@ -113,6 +113,7 @@ summarizePageBtn.addEventListener("click", async () => {
       },
       body: JSON.stringify({
         url: pageData.url,
+        text: pageData.text,
       }),
     });
 

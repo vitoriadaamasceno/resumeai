@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Optional
+
 from fastapi import File, UploadFile
 from pydantic import BaseModel
 
@@ -13,7 +15,8 @@ class VideoRequest(BaseModel):
 
 
 class HtmlInput(BaseModel):
-    url: str
+    url: Optional[str] = None
+    text: Optional[str] = None
 
 
 class PDFRequest(BaseModel):

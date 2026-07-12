@@ -56,11 +56,11 @@ async def get_html(url: str, timeout: int = 10) -> Optional[str]:
             driver.set_page_load_timeout(timeout)
 
             driver.get(url)
-
+            logging.info("Página carregada: %s", url)
             WebDriverWait(driver, timeout).until(
                 lambda d: d.execute_script("return document.readyState") == "complete"
             )
-
+            logging.info("Página totalmente carregada: %s", url)
             return driver.page_source
 
         except TimeoutException:

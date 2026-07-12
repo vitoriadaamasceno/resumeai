@@ -68,18 +68,22 @@ def summarize_video(request: VideoRequest, model: LlmModel = LlmModel.T5.value):
     
 
 @app.post("/summarize/html")
-async def summarize_html(url_body: HtmlInput, model: LlmModel = LlmModel.T5.value):
-    url = url_body.url
-    if not url:
-        logging.error("URL não fornecida.")
-        return JSONResponse(content={"error": "URL não fornecida."}, status_code=400)
+async def summarize_html(request: HtmlInput, model: LlmModel = LlmModel.T5.value):
+    text = request.text.strip() if request.text else None
+
+    if not text and not request.url:
+        logging.error("Texto ou URL não fornecidos.")
+        return JSONResponse(content={"error": "Informe o texto ou a URL da página."}, status_code=400)
+
     try:
-        html_content = await get_html(url)
-        if not html_content:
-            logging.error("Não foi possível obter o conteúdo HTML.")
-            return JSONResponse(content={"error": "Não foi possível obter o conteúdo HTML."}, status_code=404)
+        # O texto enviado pela extensão evita uma nova navegação. Quando apenas
+        # uma URL é recebida, mantém-se o scraping para obter seu conteúdo.
+        page_content = text if text else await get_html(request.url)
+        if not page_content:
+            logging.error("Não foi possível obter o conteúdo da página.")
+            return JSONResponse(content={"error": "Não foi possível obter o conteúdo da página."}, status_code=404)
      
-        resumo = summarize(html_content, model)
+        resumo = summarize(page_content, model)
 
         return {"resumo": resumo}
     except Exception as e:
